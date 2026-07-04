@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Coin Rarity Calculator</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #111827;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .card {
+      background: #1f2937;
+      border-radius: 12px;
+      padding: 24px 28px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+    }
+    p.subtitle {
+      margin-top: 0;
+      margin-bottom: 18px;
+      color: #9ca3af;
+      font-size: 0.95rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+      color: #d1d5db;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      margin-bottom: 14px;
+      border-radius: 6px;
+      border: 1px solid #374151;
+      background: #111827;
+      color: #e5e7eb;
+      box-sizing: border-box;
+    }
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px #3b82f6;
+    }
+    button {
+      margin-top: 8px;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: none;
+      background: #3b82f6;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .result {
+      margin-top: 18px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #111827;
+      border: 1px solid #374151;
+    }
+    .result-title {
+      font-size: 0.95rem;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+    .result-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #22c55e;
+    }
+    .details {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #9ca3af;
+      line-height: 1.4;
+    }
+    .error {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #f97373;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Coin Rarity Calculator</h1>
+    <p class="subtitle">
+      Mintage ÷ How Many You Have → normalized 0–100 → flipped so higher = rarer (with tenths).
+    </p>
+
+    <label for="mintage">Mintage (total coins made)</label>
+    <input type="number" id="mintage" min="1" step="1" placeholder="e.g. 50000000">
+
+    <label for="have">How many you have</label>
+    <input type="number" id="have" min="1" step="1" placeholder="e.g. 23">
+
+    <label for="maxValue">
+      Max mintage-per-owned value in your collection
+      <span style="color:#6b7280; font-size:0.8rem; display:block;">
+        Use the largest (Mintage ÷ Have) among all your coins.
+      </span>
+    </label>
+    <input type="number" id="maxValue" min="1" step="1" placeholder="e.g. 5000000">
+
+    <button onclick="calculateRarity()">Calculate Rarity</button>
+
+    <div id="error" class="error"></div>
+
+    <div class="result" id="resultBox" style="display:none;">
+      <div class="result-title">Rarity score (0.0 – 100.0, higher = rarer)</div>
+      <div class="result-value" id="rarityScore">0.0</div>
+      <div class="details" id="detailsText"></div>
+    </div>
+  </div>
+
+  <script>
+    function calculateRarity() {
+      const mintageInput = document.getElementById('mintage');
+      const haveInput = document.getElementById('have');
+      const maxInput = document.getElementById('maxValue');
+      const errorEl = document.getElementById('error');
+      const resultBox = document.getElementById('resultBox');
+      const rarityEl = document.getElementById('rarityScore');
+      const detailsEl = document.getElementById('detailsText');
+
+      errorEl.textContent = '';
+      resultBox.style.display = 'none';
+
+      const mintage = Number(mintageInput.value);
+      const have = Number(haveInput.value);
+      const maxValue = Number(maxInput.value);
+
+      if (!mintage || !have || !maxValue || mintage <= 0 || have <= 0 || maxValue <= 0) {
+        errorEl.textContent = 'Enter positive numbers for mintage, how many you have, and max mintage-per-owned.';
+        return;
+      }
+
+      // Step 1: raw value V = M / H
+      const rawValue = mintage / have;
+
+      // Step 2: normalize to 0–100: N = 100 * V / Vmax
+      let normalized = 100 * (rawValue / maxValue);
+
+      // Clamp normalized to [0, 100] just in case
+      if (normalized < 0) normalized = 0;
+      if (normalized > 100) normalized = 100;
+
+      // Step 3: flip scale so higher = rarer: R = 100 - N
+      let rarity = 100 - normalized;
+
+      // Round to nearest tenth
+      rarity = Math.round(rarity * 10) / 10;
+
+      // Final clamp to [0, 100]
+      if (rarity < 0) rarity = 0;
+      if (rarity > 100) rarity = 100;
+
+      rarityEl.textContent = rarity.toFixed(1);
+      detailsEl.textContent =
+        'Raw value (Mintage ÷ Have): ' + rawValue.toFixed(2) +
+        ' | Normalized: ' + normalized.toFixed(2) +
+        ' | Max value used: ' + maxValue.toFixed(2);
+
+      resultBox.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
