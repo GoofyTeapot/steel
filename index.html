@@ -102,7 +102,7 @@
 <div class="card">
   <h1>Coin Rarity Calculator</h1>
   <p class="subtitle">
-    Mintage ÷ Quantity → rarity (0.0–100.0), higher = rarer. Max MMpO = 250,000,000.
+    Mintage ÷ Quantity → rarity (0.0–100.0), higher = rarer. Rating floor of 0 with a roof of 25,000,000,000.
   </p>
 
   <label for="mintage">Mintage</label>
@@ -141,7 +141,7 @@ function calculateRarity() {
 
   const MMpO = mintage / have;
 
-  const maxMMpO = 250000000;
+  const maxMMpO = 25000000000;
 
   let normalized = (MMpO / maxMMpO) * 100;
 
